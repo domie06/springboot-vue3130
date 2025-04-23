@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.ShebeiJieyongDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.xuesheng_id as xueshengId
+        ,a.shebei_id as shebeiId
+        ,a.insert_time as insertTime
+        ,a.shebei_jieyong_number as shebeiJieyongNumber
+        ,a.beizhu_content as beizhuContent
+        ,a.zhuanjiao_types as zhuanjiaoTypes
+        ,a.shebei_jieyong_yesno_types as shebeiJieyongYesnoTypes
+        ,a.shebei_jieyong_yesno_text as shebeiJieyongYesnoText
+        ,a.shebei_jieyong_shenhe_time as shebeiJieyongShenheTime
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.ShebeiJieyongView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,shebei.shebei_name as shebeiName
+        ,shebei.shebei_types as shebeiTypes
+        ,shebei.shebei_number as shebeiNumber
+        ,shebei.shebei_content as shebeiContent
+        ,xuesheng.xuesheng_name as xueshengName
+        ,xuesheng.xuesheng_phone as xueshengPhone
+        ,xuesheng.xuesheng_id_number as xueshengIdNumber
+        ,xuesheng.xuesheng_photo as xueshengPhoto
+        ,xuesheng.xuesheng_email as xueshengEmail
+
+        FROM shebei_jieyong  a
+        left JOIN shebei shebei ON a.shebei_id = shebei.id
+        left JOIN xuesheng xuesheng ON a.xuesheng_id = xuesheng.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.xueshengId != null and params.xueshengId != ''">
+                and (
+                    a.xuesheng_id = #{params.xueshengId}
+                )
+            </if>
+            <if test="params.shebeiId != null and params.shebeiId != ''">
+                and (
+                    a.shebei_id = #{params.shebeiId}
+                )
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test="params.shebeiJieyongNumberStart != null and params.shebeiJieyongNumberStart != ''">
+                <![CDATA[  and a.shebei_jieyong_number >= #{params.shebeiJieyongNumberStart}   ]]>
+            </if>
+            <if test="params.shebeiJieyongNumberEnd != null and params.shebeiJieyongNumberEnd != ''">
+                <![CDATA[  and a.shebei_jieyong_number <= #{params.shebeiJieyongNumberEnd}   ]]>
+            </if>
+             <if test="params.shebeiJieyongNumber != null and params.shebeiJieyongNumber != ''">
+                and a.shebei_jieyong_number = #{params.shebeiJieyongNumber}
+             </if>
+            <if test=" params.beizhuContent != '' and params.beizhuContent != null and params.beizhuContent != 'null' ">
+                and a.beizhu_content like CONCAT('%',#{params.beizhuContent},'%')
+            </if>
+            <if test="params.zhuanjiaoTypes != null and params.zhuanjiaoTypes != ''">
+                and a.zhuanjiao_types = #{params.zhuanjiaoTypes}
+            </if>
+            <if test="params.shebeiJieyongYesnoTypes != null and params.shebeiJieyongYesnoTypes != ''">
+                and a.shebei_jieyong_yesno_types = #{params.shebeiJieyongYesnoTypes}
+            </if>
+            <if test=" params.shebeiJieyongYesnoText != '' and params.shebeiJieyongYesnoText != null and params.shebeiJieyongYesnoText != 'null' ">
+                and a.shebei_jieyong_yesno_text like CONCAT('%',#{params.shebeiJieyongYesnoText},'%')
+            </if>
+            <if test=" params.shebeiJieyongShenheTimeStart != '' and params.shebeiJieyongShenheTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shebei_jieyong_shenhe_time) >= UNIX_TIMESTAMP(#{params.shebeiJieyongShenheTimeStart}) ]]>
+            </if>
+            <if test=" params.shebeiJieyongShenheTimeEnd != '' and params.shebeiJieyongShenheTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.shebei_jieyong_shenhe_time) <= UNIX_TIMESTAMP(#{params.shebeiJieyongShenheTimeEnd}) ]]>
+            </if>
+
+                <!-- 判断设备的id不为空 -->
+            <if test=" params.shebeiIdNotNull != '' and params.shebeiIdNotNull != null and params.shebeiIdNotNull != 'null' ">
+                and a.shebei_id IS NOT NULL
+            </if>
+            <if test="params.shiyanshiId != null  and params.shiyanshiId != ''">
+                and shebei.shiyanshi_id = #{params.shiyanshiId}
+            </if>
+            <if test=" params.shebeiName != '' and params.shebeiName != null and params.shebeiName != 'null' ">
+                and shebei.shebei_name like CONCAT('%',#{params.shebeiName},'%')
+            </if>
+            <if test="params.shebeiTypes != null  and params.shebeiTypes != ''">
+                and shebei.shebei_types = #{params.shebeiTypes}
+            </if>
+
+            <if test="params.shebeiNumberStart != null  and params.shebeiNumberStart != '' ">
+                <![CDATA[  and shebei.shebei_number >= #{params.shebeiNumberStart}   ]]>
+            </if>
+            <if test="params.shebeiNumberEnd != null  and params.shebeiNumberEnd != '' ">
+                <![CDATA[  and shebei.shebei_number <= #{params.shebeiNumberEnd}   ]]>
+            </if>
+            <if test="params.shebeiNumber != null  and params.shebeiNumber != '' ">
+                and shebei.shebei_number = #{params.shebeiNumber}
+            </if>
+            <if test=" params.insertTimeStart != '' and params.insertTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(shebei.insert_time) >= UNIX_TIMESTAMP(#{params.insertTimeStart}) ]]>
+            </if>
+            <if test=" params.insertTimeEnd != '' and params.insertTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(shebei.insert_time) <= UNIX_TIMESTAMP(#{params.insertTimeEnd}) ]]>
+            </if>
+            <if test=" params.shebeiContent != '' and params.shebeiContent != null and params.shebeiContent != 'null' ">
+                and shebei.shebei_content like CONCAT('%',#{params.shebeiContent},'%')
+            </if>
+                <!-- 判断学生的id不为空 -->
+            <if test=" params.xueshengIdNotNull != '' and params.xueshengIdNotNull != null and params.xueshengIdNotNull != 'null' ">
+                and a.xuesheng_id IS NOT NULL
+            </if>
+            <if test=" params.xueshengName != '' and params.xueshengName != null and params.xueshengName != 'null' ">
+                and xuesheng.xuesheng_name like CONCAT('%',#{params.xueshengName},'%')
+            </if>
+            <if test=" params.xueshengPhone != '' and params.xueshengPhone != null and params.xueshengPhone != 'null' ">
+                and xuesheng.xuesheng_phone like CONCAT('%',#{params.xueshengPhone},'%')
+            </if>
+            <if test=" params.xueshengIdNumber != '' and params.xueshengIdNumber != null and params.xueshengIdNumber != 'null' ">
+                and xuesheng.xuesheng_id_number like CONCAT('%',#{params.xueshengIdNumber},'%')
+            </if>
+            <if test=" params.xueshengEmail != '' and params.xueshengEmail != null and params.xueshengEmail != 'null' ">
+                and xuesheng.xuesheng_email like CONCAT('%',#{params.xueshengEmail},'%')
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
